@@ -9,9 +9,12 @@ import DialogContentText from '@material-ui/core/DialogContentText';
 import MenuItem from '@material-ui/core/MenuItem';
 import Select from '@material-ui/core/Select';
 
+const DefaultDisposition = 'DEFAULT';
+
 class DispositionDialog extends React.Component {
   state = {
-    callDisposition: ''
+    callDisposition: DefaultDisposition,
+    options: ['Completed', 'DoNotCall', 'SpamDialer', 'CallBack', 'CancelService', 'Renewal', 'TestCall']
   }
 
   handleClose = () => {
@@ -37,21 +40,24 @@ class DispositionDialog extends React.Component {
     //save disposition
     console.log('Saving call disposition');
     console.log('task: ', this.props.task);
-    let newAttributes = {...this.props.task.attributes};
-    newAttributes.disposition = this.state.callDisposition;
-    //insights outcome
-    let conversations = this.props.task.attributes.conversations;
-    let newConv = {};
-    if (conversations) {
-      newConv = {...conversations};
-    }
-    newConv.outcome = this.state.callDisposition;
-    newAttributes.conversations = newConv;
+    let dispValue = this.state.callDisposition
+    if (dispValue != DefaultDisposition) {
+      let newAttributes = { ...this.props.task.attributes };
+      newAttributes.disposition = dispValue;
+      //insights outcome
+      let conversations = this.props.task.attributes.conversations;
+      let newConv = {};
+      if (conversations) {
+        newConv = { ...conversations };
+      }
+      newConv.outcome = dispValue;
+      newAttributes.conversations = newConv;
 
-    await this.props.task.setAttributes(newAttributes);
-    //clear disposition
-    this.setState({ callDisposition: '' });
-    this.closeDialog();
+      await this.props.task.setAttributes(newAttributes);
+      //clear disposition
+      this.setState({ callDisposition: DefaultDisposition });
+      this.closeDialog();
+    }
 
   }
 
@@ -66,16 +72,20 @@ class DispositionDialog extends React.Component {
             Please select the disposition value for the completed call.
           </DialogContentText>
           <Select
-              value={this.state.callDisposition}
-              onChange={this.handleChange}
-              name="disposition"
-            >
-              <MenuItem value="Completed">Completed</MenuItem>
-              <MenuItem value="CallBack">Call Back</MenuItem>
-              <MenuItem value="Canceled">Canceled Service</MenuItem>
-              <MenuItem value="Confirmed">Confirmed</MenuItem>
-              <MenuItem value="NewService">New Service</MenuItem>
-            </Select>
+            value={this.state.callDisposition}
+            onChange={this.handleChange}
+            name="disposition"
+          >
+            <MenuItem value={DefaultDisposition}>SELECT DISPOSITION</MenuItem>
+            {this.state.options.map((option) => (
+              <MenuItem
+                key={option}
+                value={option}
+              > {option}
+              </MenuItem>
+            ))}
+
+          </Select>
         </DialogContent>
         <DialogActions>
           <Button
@@ -84,7 +94,7 @@ class DispositionDialog extends React.Component {
           >
             Save
           </Button>
-          
+
         </DialogActions>
       </Dialog>
     );

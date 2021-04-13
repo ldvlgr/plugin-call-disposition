@@ -2,7 +2,6 @@ import React from 'react';
 import { VERSION, Actions } from '@twilio/flex-ui';
 import { FlexPlugin } from 'flex-plugin';
 
-import CustomTaskListContainer from './components/CustomTaskList/CustomTaskList.Container';
 import reducers, { namespace } from './states';
 import DispositionDialog from './components/CallDisposition/DispositionDialog';
 
@@ -23,12 +22,6 @@ export default class CallDispositionPlugin extends FlexPlugin {
   init(flex, manager) {
     this.registerReducers(manager);
 
-    // const options = { sortOrder: -1 };
-    // flex.AgentDesktopView
-    //   .Panel1
-    //   .Content
-    //   .add(<CustomTaskListContainer key="CallDispositionPlugin-component" />, options);
-
     flex.AgentDesktopView.Panel1.Content.add(<DispositionDialog
       key="disposition-modal"
     />, { sortOrder: 100 });
@@ -36,25 +29,18 @@ export default class CallDispositionPlugin extends FlexPlugin {
 
     manager.workerClient.on("reservationCreated", reservation => {
       console.log('reservationCreated: ', reservation);
-      const isVoiceQueue = reservation.task.taskChannelUniqueName === 'voice';
+      //const isVoiceQueue = reservation.task.taskChannelUniqueName === 'voice';
       const isInboundTask = reservation.task.attributes.direction === 'inbound';
       //Register listener for reservation wrapup event
-      if (isVoiceQueue) {
+      //if (isVoiceQueue) {
         reservation.on('wrapup', reservation => {
           Actions.invokeAction('SetComponentState', {
             name: 'DispositionDialog',
             state: { isOpen: true }
           });
         });
-
-      }
-      
+      //}
     });
-
-
-
-
-
 
 
 
